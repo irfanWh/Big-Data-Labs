@@ -1,0 +1,68 @@
+groups:
+  - name: hdfs_alerts
+    rules:
+      # ── Critical: NameNode is down ──
+      - alert: NameNodeDown
+        expr: up{job="namenode"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "NameNode is DOWN"
+          description: "The HDFS NameNode ({{ $labels.instance }}) has been unreachable for more than 1 minute."
+
+      # ── Critical: DataNode is down ──
+      - alert: DataNodeDown
+        expr: up{job="datanode"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "DataNode is DOWN"
+          description: "The HDFS DataNode ({{ $labels.instance }}) has been unreachable for more than 1 minute."
+
+      # ── Warning: HDFS capacity usage > 80% ──
+      - alert: HDFSCapacityWarning
+        expr: |
+          (hadoop_namenode_fs_namesystem_capacityused / hadoop_namenode_fs_namesystem_capacitytotal) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HDFS capacity usage above 80%"
+          description: "HDFS is using {{ $value | printf \"%.1f\" }}% of total capacity on {{ $labels.instance }}."
+
+      # ── Critical: HDFS capacity usage > 90% ──
+      - alert: HDFSCapacityCritical
+        expr: |
+          (hadoop_namenode_fs_namesystem_capacityused / hadoop_namenode_fs_namesystem_capacitytotal) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "HDFS capacity usage above 90%"
+          description: "HDFS is using {{ $value | printf \"%.1f\" }}% of total capacity on {{ $labels.instance }}."
+
+  - name: jvm_alerts
+    rules:
+      # ── Warning: JVM heap usage > 80% ──
+      - alert: JVMHeapUsageHigh
+        expr: |
+          (jvm_memory_bytes_used / jvm_memory_bytes_max) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM Heap usage above 80%"
+          description: "JVM heap on {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}%."
+
+      # ── Critical: JVM heap usage > 95% ──
+      - alert: JVMHeapUsageCritical
+        expr: |
+          (jvm_memory_bytes_used / jvm_memory_bytes_max) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "JVM Heap usage above 95%"
+          description: "JVM heap on {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}%. Risk of OutOfMemoryError."

@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - /etc/prometheus/alert_rules.yml
+
+scrape_configs:
+  - job_name: 'namenode'
+    metrics_path: /
+    static_configs:
+      - targets: ['namenode:7000']
+
+  - job_name: 'datanode'
+    metrics_path: /
+    static_configs:
+      - targets: ['datanode:7001']
